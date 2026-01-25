@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimax Search</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #dc3545, #ffffff);
+        }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            width: 600px;
+            text-align: center;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            width: 50px;
+            margin-right: 15px;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            color: #dc3545;
+        }
+
+        .tabs {
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+            background: #eee;
+        }
+
+        .tab.active {
+            background: #dc3545;
+            color: white;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+        }
+
+        input {
+            width: 70%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px 0 0 4px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            background: #dc3545;
+            color: white;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+        }
+
+        button:hover {
+            background: #b02a37;
+        }
+
+        #results {
+            margin-top: 20px;
+            text-align: left;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <img src="https://i.postimg.cc/K819rZ64/Capture.png" class="logo">
+        <h1>Ultimax Search</h1>
+    </header>
+
+    <div class="tabs">
+        <button id="ip-tab" class="tab active">IP</button>
+        <button id="email-tab" class="tab">Email</button>
+    </div>
+
+    <form id="search-form">
+        <input id="ip-input" type="text" placeholder="Enter IP address...">
+        <input id="email-input" type="text" placeholder="Enter email..." style="display:none;">
+        <button type="submit">Lookup</button>
+    </form>
+
+    <div id="results"></div>
+</div>
+
+<script>
+let activeTab = "ip";
+
+const ipTab = document.getElementById("ip-tab");
+const emailTab = document.getElementById("email-tab");
+const ipInput = document.getElementById("ip-input");
+const emailInput = document.getElementById("email-input");
+const results = document.getElementById("results");
+
+ipTab.onclick = () => {
+    activeTab = "ip";
+    ipTab.classList.add("active");
+    emailTab.classList.remove("active");
+    ipInput.style.display = "block";
+    emailInput.style.display = "none";
+};
+
+emailTab.onclick = () => {
+    activeTab = "email";
+    emailTab.classList.add("active");
+    ipTab.classList.remove("active");
+    ipInput.style.display = "none";
+    emailInput.style.display = "block";
+};
+
+document.getElementById("search-form").addEventListener("submit", e => {
+    e.preventDefault();
+    results.style.display = "block";
+    results.innerHTML = "Loading...";
+
+    if (activeTab === "ip") {
+        const ip = ipInput.value.trim();
+        const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+
+        if (!ipRegex.test(ip)) {
+            results.innerHTML = "<p>❌ Adresse IP invalide</p>";
+            return;
+        }
+
+        fetch(`https://ipinfo.io/${ip}/json?token=edae45c321d3ba`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    results.innerHTML = `<p>❌ Erreur : ${data.error.message}</p>`;
+                    return;
+                }
+
+                const [lat, lon] = data.loc ? data.loc.split(",") : ["", ""];
+
+                results.innerHTML = `
+                    <h3>Résultat IP</h3>
+                    <p><strong>IP :</strong> ${data.ip}</p>
+                    <p><strong>Ville :</strong> ${data.city}</p>
+                    <p><strong>Région :</strong> ${data.region}</p>
+                    <p><strong>Pays :</strong> ${data.country}</p>
+                    <p><strong>Latitude :</strong> ${lat}</p>
+                    <p><strong>Longitude :</strong> ${lon}</p>
+                    <p><strong>Fuseau horaire :</strong> ${data.timezone}</p>
+                    <p><strong>ISP :</strong> ${data.org}</p>
+                `;
+            })
+            .catch(err => {
+                results.innerHTML = `<p>❌ Erreur réseau : ${err.message}</p>`;
+            });
+    }
+
+    if (activeTab === "email") {
+        const email = emailInput.value.trim();
+        if (!email) {
+            results.innerHTML = "<p>❌ Email invalide</p>";
+            return;
+        }
+
+        window.open(
+            `https://haveibeenpwned.com/account/${encodeURIComponent(email)}`,
+            "_blank"
+        );
+        results.innerHTML = "<p>🔎 Recherche ouverte sur Have I Been Pwned</p>";
+    }
+});
+</script>
+
+</body>
+</html>
+
