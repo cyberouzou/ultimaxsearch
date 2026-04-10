@@ -3,191 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimax Search | Sécurisé</title>
+    <title>Ultimax Search</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* Styles conservés et légèrement épurés */
+        /* Design moderne et responsive */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #dc3545, #f8f9fa);
+            background: linear-gradient(135deg, #1e1e2f, #dc3545); /* Dégradé sombre vers rouge */
         }
         .container {
             background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
             width: 100%;
-            max-width: 500px;
+            max-width: 450px;
             text-align: center;
         }
-        header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-        .logo { width: 60px; margin-bottom: 10px; }
-        h1 { font-family: 'Montserrat', sans-serif; color: #dc3545; margin: 0; }
+        header { margin-bottom: 25px; }
+        .logo { width: 70px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        h1 { font-family: 'Montserrat', sans-serif; color: #dc3545; font-size: 24px; }
         
-        .tabs { margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; }
+        /* Style des onglets (IP / Email) */
+        .tabs { margin-bottom: 25px; display: flex; gap: 5px; }
         .tab {
-            padding: 10px 25px;
-            border: 2px solid transparent;
+            flex: 1;
+            padding: 12px;
+            border: none;
             cursor: pointer;
             font-weight: bold;
             border-radius: 8px;
-            background: #f1f1f1;
-            transition: 0.3s;
+            background: #f0f0f0;
+            transition: all 0.3s ease;
         }
         .tab.active { background: #dc3545; color: white; }
         
-        form { display: flex; flex-direction: column; gap: 10px; }
+        /* Formulaire */
+        form { display: flex; flex-direction: column; gap: 15px; }
         input {
-            padding: 12px;
+            padding: 15px;
             font-size: 16px;
             border: 2px solid #ddd;
-            border-radius: 6px;
+            border-radius: 8px;
             outline: none;
         }
         input:focus { border-color: #dc3545; }
         
         button[type="submit"] {
-            padding: 12px;
+            padding: 15px;
             border: none;
             background: #dc3545;
             color: white;
             font-weight: bold;
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 16px;
         }
-        button[type="submit"]:hover { background: #b02a37; }
 
-        #results {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 6px;
-            background: #f9f9f9;
-            text-align: left;
-            display: none;
-            border-left: 5px solid #dc3545;
-            word-wrap: break-word;
+        /* Messages de statut (Succès / Erreur) */
+        #status-msg {
+            margin-top: 15px;
+            font-size: 0.9em;
+            display: none; /* Caché par défaut */
+            padding: 10px;
+            border-radius: 5px;
         }
+        .error { background: #ffebee; color: #c62828; display: block !important; }
+        .success { background: #e8f5e9; color: #2e7d32; display: block !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <img src="https://i.postimg.cc/K819rZ64/Capture.png" class="logo" alt="Logo">
+        <img src="https://static.vecteezy.com/system/resources/thumbnails/011/759/881/small/us-u-s-letter-logo-design-initial-letter-us-linked-circle-uppercase-monogram-logo-red-and-blue-us-logo-u-s-design-us-u-s-vector.jpg" class="logo" alt="Logo">
         <h1>Ultimax Search</h1>
     </header>
 
     <div class="tabs">
-        <button id="ip-tab" class="tab active">IP Lookup</button>
-        <button id="email-tab" class="tab">Email Security</button>
+        <button id="ip-tab" class="tab active">Localiser IP</button>
+        <button id="email-tab" class="tab">Sécurité Email</button>
     </div>
 
     <form id="search-form">
-        <input id="main-input" type="text" placeholder="Entrez une adresse IP (ex: 8.8.8.8)" required>
-        <button type="submit">Rechercher</button>
+        <input id="user-input" type="text" placeholder="Entrez une IP (ex: 8.8.8.8)" required>
+        <button type="submit" id="submit-btn">Rechercher</button>
     </form>
 
-    <div id="results"></div>
+    <div id="status-msg"></div>
 </div>
 
 <script>
-    // Configuration
-    let activeTab = "ip";
+    // Récupération des éléments HTML pour les manipuler
     const searchForm = document.getElementById("search-form");
-    const mainInput = document.getElementById("main-input");
-    const resultsDiv = document.getElementById("results");
+    const userInput = document.getElementById("user-input");
+    const statusMsg = document.getElementById("status-msg");
     const ipTab = document.getElementById("ip-tab");
     const emailTab = document.getElementById("email-tab");
+    
+    // Variable pour savoir si on recherche une IP ou un Email
+    let activeMode = "ip";
 
-    // Gestion du changement d'onglets
+    // Action au clic sur l'onglet IP
     ipTab.onclick = () => {
-        activeTab = "ip";
-        ipTab.classList.add("active");
-        emailTab.classList.remove("active");
-        mainInput.placeholder = "Entrez une adresse IP (ex: 8.8.8.8)";
-        resultsDiv.style.display = "none";
+        activeMode = "ip";
+        updateUI("Localiser IP", "Entrez une IP (ex: 8.8.8.8)", ipTab, emailTab);
     };
 
+    // Action au clic sur l'onglet Email
     emailTab.onclick = () => {
-        activeTab = "email";
-        emailTab.classList.add("active");
-        ipTab.classList.remove("active");
-        mainInput.placeholder = "Entrez un email...";
-        resultsDiv.style.display = "none";
+        activeMode = "email";
+        updateUI("Vérifier Email", "Entrez un email...", emailTab, ipTab);
     };
 
-    // Fonction de nettoyage (Sanitization) pour éviter les failles XSS
-    function escapeHTML(str) {
-        const p = document.createElement('p');
-        p.textContent = str;
-        return p.innerHTML;
+    // Fonction pour mettre à jour l'interface visuellement
+    function updateUI(btnText, placeholder, activeBtn, inactiveBtn) {
+        document.getElementById("submit-btn").innerText = btnText;
+        userInput.placeholder = placeholder;
+        activeBtn.classList.add("active");
+        inactiveBtn.classList.remove("active");
+        statusMsg.style.display = "none"; // Cache les messages d'erreur précédents
+        userInput.value = ""; // Vide le champ
     }
 
-    searchForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const query = mainInput.value.trim();
+    // Gestion de la soumission du formulaire
+    searchForm.addEventListener("submit", (e) => {
+        e.preventDefault(); // Empêche le rechargement de la page
+        const value = userInput.value.trim(); // Récupère la valeur saisie sans espaces inutiles
         
-        resultsDiv.style.display = "block";
-        resultsDiv.innerHTML = "chargement...";
-
-        if (activeTab === "ip") {
-            // Validation REGEX robuste pour IPv4
+        if (activeMode === "ip") {
+            /* SÉCURITÉ : REGEX (Expression Régulière)
+               Vérifie que l'entrée suit bien le format 0-255.0-255.0-255.0-255
+               Cela empêche l'envoi de texte malveillant ou d'URLs frauduleuses.
+            */
             const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
             
-            if (!ipRegex.test(query)) {
-                resultsDiv.innerHTML = "❌ Format d'adresse IP invalide.";
-                return;
+            if (ipRegex.test(value)) {
+                showStatus("Redirection vers IPLocation...", "success");
+                
+                /* SÉCURITÉ : encodeURIComponent
+                   Nettoie la valeur pour qu'elle soit injectable dans une URL sans risque.
+                */
+                const safeIp = encodeURIComponent(value);
+                
+                // Redirection après un court délai pour l'expérience utilisateur
+                setTimeout(() => {
+                    window.open(`https://www.iplocation.net/search?q=${safeIp}`, "_blank");
+                }, 800);
+            } else {
+                showStatus(" Format d'IP invalide (ex: 1.1.1.1)", "error");
             }
 
-            try {
-                // Utilisation de ip-api.com (Gratuit, pas de clé exposée nécessaire)
-                const response = await fetch(`http://ip-api.com/json/${query}?fields=status,message,country,regionName,city,zip,lat,lon,timezone,isp,org,as,query`);
-                const data = await response.json();
-
-                if (data.status === "fail") {
-                    resultsDiv.innerHTML = `❌ Erreur : ${escapeHTML(data.message)}`;
-                    return;
-                }
-
-                // Construction sécurisée du HTML
-                resultsDiv.innerHTML = `
-                    <h3 style="margin-top:0">Informations IP</h3>
-                    <p><strong>Cible :</strong> ${escapeHTML(data.query)}</p>
-                    <p><strong>Localisation :</strong> ${escapeHTML(data.city)}, ${escapeHTML(data.country)} (${escapeHTML(data.regionName)})</p>
-                    <p><strong>ISP :</strong> ${escapeHTML(data.isp)}</p>
-                    <p><strong>Coordonnées :</strong> ${data.lat}, ${data.lon}</p>
-                    <hr>
-                    <a href="https://www.abuseipdb.com/check/${data.query}" target="_blank" style="color:#dc3545; font-size: 0.8em;">Vérifier la réputation sur AbuseIPDB ↗</a>
-                `;
-            } catch (error) {
-                resultsDiv.innerHTML = "❌ Erreur réseau ou blocage de l'API.";
+        } else if (activeMode === "email") {
+            // Validation simple de l'email
+            if (value.includes("@") && value.length > 5) {
+                showStatus("Vérification des fuites de données...", "success");
+                
+                setTimeout(() => {
+                    // Ouvre HaveIBeenPwned dans un nouvel onglet
+                    window.open(`https://haveibeenpwned.com/account/${encodeURIComponent(value)}`, "_blank");
+                }, 800);
+            } else {
+                showStatus(" Veuillez entrer un email valide.", "error");
             }
-
-        } else if (activeTab === "email") {
-            // Sécurité simple pour l'email
-            if (!query.includes("@") || query.length < 5) {
-                resultsDiv.innerHTML = "❌ Veuillez entrer un email valide.";
-                return;
-            }
-            
-            // Redirection vers un service tiers reconnu pour la sécurité
-            resultsDiv.innerHTML = "✅ Redirection vers HaveIBeenPwned en cours...";
-            setTimeout(() => {
-                window.open(`https://haveibeenpwned.com/account/${encodeURIComponent(query)}`, "_blank");
-            }, 1000);
         }
     });
+
+    // Fonction pour afficher les messages de succès ou d'erreur
+    function showStatus(text, type) {
+        statusMsg.innerText = text;
+        statusMsg.className = type; // Ajoute la classe CSS 'error' ou 'success'
+    }
 </script>
 
 </body>
