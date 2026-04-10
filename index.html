@@ -3,95 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimax Search</title>
-
+    <title>Ultimax Search | Sécurisé</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
-
     <style>
+        /* Styles conservés et légèrement épurés */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #dc3545, #ffffff);
+            background: linear-gradient(135deg, #dc3545, #f8f9fa);
         }
-
         .container {
             background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-            width: 600px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 500px;
             text-align: center;
         }
-
         header {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
             margin-bottom: 25px;
         }
-
-        .logo {
-            width: 50px;
-            margin-right: 15px;
-        }
-
-        h1 {
-            font-family: 'Montserrat', sans-serif;
-            color: #dc3545;
-        }
-
-        .tabs {
-            margin-bottom: 20px;
-        }
-
+        .logo { width: 60px; margin-bottom: 10px; }
+        h1 { font-family: 'Montserrat', sans-serif; color: #dc3545; margin: 0; }
+        
+        .tabs { margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; }
         .tab {
-            padding: 10px 20px;
-            border: none;
+            padding: 10px 25px;
+            border: 2px solid transparent;
             cursor: pointer;
-            font-size: 16px;
-            border-radius: 4px;
-            background: #eee;
+            font-weight: bold;
+            border-radius: 8px;
+            background: #f1f1f1;
+            transition: 0.3s;
         }
-
-        .tab.active {
-            background: #dc3545;
-            color: white;
-        }
-
-        form {
-            display: flex;
-            justify-content: center;
-        }
-
+        .tab.active { background: #dc3545; color: white; }
+        
+        form { display: flex; flex-direction: column; gap: 10px; }
         input {
-            width: 70%;
             padding: 12px;
             font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px 0 0 4px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            outline: none;
         }
-
-        button {
-            padding: 12px 20px;
+        input:focus { border-color: #dc3545; }
+        
+        button[type="submit"] {
+            padding: 12px;
             border: none;
             background: #dc3545;
             color: white;
+            font-weight: bold;
             cursor: pointer;
-            border-radius: 0 4px 4px 0;
+            border-radius: 6px;
+            font-size: 16px;
         }
-
-        button:hover {
-            background: #b02a37;
-        }
+        button[type="submit"]:hover { background: #b02a37; }
 
         #results {
             margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f9f9f9;
             text-align: left;
             display: none;
+            border-left: 5px solid #dc3545;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -99,106 +84,111 @@
 
 <div class="container">
     <header>
-        <img src="https://i.postimg.cc/K819rZ64/Capture.png" class="logo">
+        <img src="https://i.postimg.cc/K819rZ64/Capture.png" class="logo" alt="Logo">
         <h1>Ultimax Search</h1>
     </header>
 
     <div class="tabs">
-        <button id="ip-tab" class="tab active">IP</button>
-        <button id="email-tab" class="tab">Email</button>
+        <button id="ip-tab" class="tab active">IP Lookup</button>
+        <button id="email-tab" class="tab">Email Security</button>
     </div>
 
     <form id="search-form">
-        <input id="ip-input" type="text" placeholder="Enter IP address...">
-        <input id="email-input" type="text" placeholder="Enter email..." style="display:none;">
-        <button type="submit">Lookup</button>
+        <input id="main-input" type="text" placeholder="Entrez une adresse IP (ex: 8.8.8.8)" required>
+        <button type="submit">Rechercher</button>
     </form>
 
     <div id="results"></div>
 </div>
 
 <script>
-let activeTab = "ip";
+    // Configuration
+    let activeTab = "ip";
+    const searchForm = document.getElementById("search-form");
+    const mainInput = document.getElementById("main-input");
+    const resultsDiv = document.getElementById("results");
+    const ipTab = document.getElementById("ip-tab");
+    const emailTab = document.getElementById("email-tab");
 
-const ipTab = document.getElementById("ip-tab");
-const emailTab = document.getElementById("email-tab");
-const ipInput = document.getElementById("ip-input");
-const emailInput = document.getElementById("email-input");
-const results = document.getElementById("results");
+    // Gestion du changement d'onglets
+    ipTab.onclick = () => {
+        activeTab = "ip";
+        ipTab.classList.add("active");
+        emailTab.classList.remove("active");
+        mainInput.placeholder = "Entrez une adresse IP (ex: 8.8.8.8)";
+        resultsDiv.style.display = "none";
+    };
 
-ipTab.onclick = () => {
-    activeTab = "ip";
-    ipTab.classList.add("active");
-    emailTab.classList.remove("active");
-    ipInput.style.display = "block";
-    emailInput.style.display = "none";
-};
+    emailTab.onclick = () => {
+        activeTab = "email";
+        emailTab.classList.add("active");
+        ipTab.classList.remove("active");
+        mainInput.placeholder = "Entrez un email...";
+        resultsDiv.style.display = "none";
+    };
 
-emailTab.onclick = () => {
-    activeTab = "email";
-    emailTab.classList.add("active");
-    ipTab.classList.remove("active");
-    ipInput.style.display = "none";
-    emailInput.style.display = "block";
-};
+    // Fonction de nettoyage (Sanitization) pour éviter les failles XSS
+    function escapeHTML(str) {
+        const p = document.createElement('p');
+        p.textContent = str;
+        return p.innerHTML;
+    }
 
-document.getElementById("search-form").addEventListener("submit", e => {
-    e.preventDefault();
-    results.style.display = "block";
-    results.innerHTML = "Loading...";
+    searchForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const query = mainInput.value.trim();
+        
+        resultsDiv.style.display = "block";
+        resultsDiv.innerHTML = "chargement...";
 
-    if (activeTab === "ip") {
-        const ip = ipInput.value.trim();
-        const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+        if (activeTab === "ip") {
+            // Validation REGEX robuste pour IPv4
+            const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            
+            if (!ipRegex.test(query)) {
+                resultsDiv.innerHTML = "❌ Format d'adresse IP invalide.";
+                return;
+            }
 
-        if (!ipRegex.test(ip)) {
-            results.innerHTML = "<p>❌ Adresse IP invalide</p>";
-            return;
-        }
+            try {
+                // Utilisation de ip-api.com (Gratuit, pas de clé exposée nécessaire)
+                const response = await fetch(`http://ip-api.com/json/${query}?fields=status,message,country,regionName,city,zip,lat,lon,timezone,isp,org,as,query`);
+                const data = await response.json();
 
-        fetch(`https://ipinfo.io/${ip}/json?token=edae45c321d3ba`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    results.innerHTML = `<p>❌ Erreur : ${data.error.message}</p>`;
+                if (data.status === "fail") {
+                    resultsDiv.innerHTML = `❌ Erreur : ${escapeHTML(data.message)}`;
                     return;
                 }
 
-                const [lat, lon] = data.loc ? data.loc.split(",") : ["", ""];
-
-                results.innerHTML = `
-                    <h3>Résultat IP</h3>
-                    <p><strong>IP :</strong> ${data.ip}</p>
-                    <p><strong>Ville :</strong> ${data.city}</p>
-                    <p><strong>Région :</strong> ${data.region}</p>
-                    <p><strong>Pays :</strong> ${data.country}</p>
-                    <p><strong>Latitude :</strong> ${lat}</p>
-                    <p><strong>Longitude :</strong> ${lon}</p>
-                    <p><strong>Fuseau horaire :</strong> ${data.timezone}</p>
-                    <p><strong>ISP :</strong> ${data.org}</p>
+                // Construction sécurisée du HTML
+                resultsDiv.innerHTML = `
+                    <h3 style="margin-top:0">Informations IP</h3>
+                    <p><strong>Cible :</strong> ${escapeHTML(data.query)}</p>
+                    <p><strong>Localisation :</strong> ${escapeHTML(data.city)}, ${escapeHTML(data.country)} (${escapeHTML(data.regionName)})</p>
+                    <p><strong>ISP :</strong> ${escapeHTML(data.isp)}</p>
+                    <p><strong>Coordonnées :</strong> ${data.lat}, ${data.lon}</p>
+                    <hr>
+                    <a href="https://www.abuseipdb.com/check/${data.query}" target="_blank" style="color:#dc3545; font-size: 0.8em;">Vérifier la réputation sur AbuseIPDB ↗</a>
                 `;
-            })
-            .catch(err => {
-                results.innerHTML = `<p>❌ Erreur réseau : ${err.message}</p>`;
-            });
-    }
+            } catch (error) {
+                resultsDiv.innerHTML = "❌ Erreur réseau ou blocage de l'API.";
+            }
 
-    if (activeTab === "email") {
-        const email = emailInput.value.trim();
-        if (!email) {
-            results.innerHTML = "<p>❌ Email invalide</p>";
-            return;
+        } else if (activeTab === "email") {
+            // Sécurité simple pour l'email
+            if (!query.includes("@") || query.length < 5) {
+                resultsDiv.innerHTML = "❌ Veuillez entrer un email valide.";
+                return;
+            }
+            
+            // Redirection vers un service tiers reconnu pour la sécurité
+            resultsDiv.innerHTML = "✅ Redirection vers HaveIBeenPwned en cours...";
+            setTimeout(() => {
+                window.open(`https://haveibeenpwned.com/account/${encodeURIComponent(query)}`, "_blank");
+            }, 1000);
         }
-
-        window.open(
-            `https://haveibeenpwned.com/account/${encodeURIComponent(email)}`,
-            "_blank"
-        );
-        results.innerHTML = "<p>🔎 Recherche ouverte sur Have I Been Pwned</p>";
-    }
-});
+    });
 </script>
 
 </body>
 </html>
-
